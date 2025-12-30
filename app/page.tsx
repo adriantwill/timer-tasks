@@ -17,9 +17,7 @@ export default function Home() {
               <h1 className="text-3xl font-bold text-foreground tracking-tight">
                 Weekly Focus
               </h1>
-              <p className="text-muted-foreground">
-                Track your time, master your week.
-              </p>
+              <p className="text-muted-foreground">Track your time.</p>
             </div>
           </div>
           <WeeklyProgress />
