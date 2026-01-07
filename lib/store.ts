@@ -1,4 +1,4 @@
-import { AppState, Task, WeeklyHistory } from '@/types';
+import { AppState, Task, TaskStats, WeeklyHistory } from '@/types';
 import { getCurrentWeekId, isNewWeek } from '@/lib/temporal';
 import { Temporal } from '@js-temporal/polyfill';
 
@@ -8,6 +8,7 @@ const STORAGE_KEY = 'timer-tasks-state';
 const initialState: AppState = {
   currentTasks: [],
   history: [],
+  lifetimeStats: [],
   lastUpdated: Temporal.Now.instant().toString(),
 };
 
@@ -65,10 +66,31 @@ class TaskStore {
       weekId: oldState.lastUpdated,
       tasks: oldState.currentTasks,
     };
-    
+
+    // Update lifetime stats for each task
+    const updatedStats = [...(oldState.lifetimeStats || [])];
+    for (const task of oldState.currentTasks) {
+      const existing = updatedStats.find(s => s.taskId === task.id);
+      const completed = task.elapsedTime >= task.targetTime ? 1 : 0;
+
+      if (existing) {
+        existing.totalTimeSpent += task.elapsedTime;
+        existing.weeksCompleted += completed;
+        existing.title = task.title; // keep title in sync
+      } else {
+        updatedStats.push({
+          taskId: task.id,
+          title: task.title,
+          totalTimeSpent: task.elapsedTime,
+          weeksCompleted: completed,
+        });
+      }
+    }
+
     this.state = {
       currentTasks: oldState.currentTasks.map(t => ({ ...t, elapsedTime: 0 })),
       history: [newHistory, ...oldState.history].slice(0, 5),
+      lifetimeStats: updatedStats,
       lastUpdated: Temporal.Now.instant().toString(),
     };
     this.save();
@@ -154,12 +176,26 @@ class TaskStore {
 
     this.state = {
       ...this.state,
-      currentTasks: this.state.currentTasks.map(t => 
+      currentTasks: this.state.currentTasks.map(t =>
         t.id === this.activeTaskId ? { ...t, elapsedTime: t.elapsedTime + 1 } : t
       ),
       lastUpdated: Temporal.Now.instant().toString(),
     };
     this.save();
+  }
+
+  public exportData() {
+    const data = {
+      exportedAt: Temporal.Now.instant().toString(),
+      ...this.state,
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `timer-tasks-${getCurrentWeekId()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 }
 
