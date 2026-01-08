@@ -43,5 +43,5 @@ jobs:
             docker pull ghcr.io/adriantwill/timer-tasks:latest
             docker stop timer-tasks || true
             docker rm timer-tasks || true
-            docker run -d --name timer-tasks -p 3000:3000 --restart unless-stopped ghcr.io/adriantwill/timer-tasks:latest
+            docker run -d --name timer-tasks -p 3001:3000 --restart unless-stopped ghcr.io/adriantwill/timer-tasks:latest
             docker image prune -f
