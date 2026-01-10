@@ -3,6 +3,7 @@ import { formatDuration, cn } from "@/lib/utils";
 import { Play, Pause, Trash2, CheckCircle2 } from "lucide-react";
 import { ProgressBar } from "./ProgressBar";
 import { taskStore } from "@/lib/store";
+import { useRef } from "react";
 
 interface TaskItemProps {
   task: Task;
@@ -12,6 +13,19 @@ interface TaskItemProps {
 export function TaskItem({ task, isActive }: TaskItemProps) {
   const progress = (task.elapsedTime / task.targetTime) * 100;
   const isCompleted = task.elapsedTime >= task.targetTime;
+  const colorPickerRef = useRef<HTMLInputElement>(null);
+
+  const taskColor = task.color || "#3873fc";
+
+  const handleColorClick = () => {
+    if (!isCompleted) {
+      colorPickerRef.current?.click();
+    }
+  };
+
+  const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    taskStore.updateTaskColor(task.id, e.target.value);
+  };
 
   return (
     <div
@@ -26,14 +40,23 @@ export function TaskItem({ task, isActive }: TaskItemProps) {
           {isCompleted ? (
             <CheckCircle2 className="w-5 h-5 text-primary" />
           ) : (
-            <div
-              className={cn(
-                "w-2 h-2 rounded-full",
-                isActive
-                  ? "bg-primary animate-pulse"
-                  : "bg-muted-foreground/30",
-              )}
-            />
+            <div className="relative">
+              <div
+                onClick={handleColorClick}
+                className={cn(
+                  "w-3 h-3 rounded-full cursor-pointer hover:ring-2 hover:ring-offset-1 transition-all",
+                  isActive && "animate-pulse",
+                )}
+                style={{ backgroundColor: taskColor }}
+              />
+              <input
+                ref={colorPickerRef}
+                type="color"
+                value={taskColor}
+                onChange={handleColorChange}
+                className="absolute opacity-0 pointer-events-none"
+              />
+            </div>
           )}
           <h3
             className={cn(

@@ -4,6 +4,7 @@ export interface Task {
   targetTime: number; // in seconds
   elapsedTime: number; // in seconds
   createdAt: string; // ISO string
+  color?: string; // hex color, defaults to primary blue
 }
 
 export interface WeeklyHistory {

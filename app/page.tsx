@@ -3,8 +3,11 @@ import { HistoryStats } from "@/components/HistoryStats";
 import { WeeklyProgress } from "@/components/WeeklyProgress";
 import { TaskList } from "@/components/TaskList";
 import { Clock } from "lucide-react";
+import { getNextWeekStart } from "@/lib/temporal";
 
 export default function Home() {
+  const nextReset = getNextWeekStart();
+
   return (
     <main className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
@@ -20,7 +23,15 @@ export default function Home() {
               <p className="text-muted-foreground">Track your time.</p>
             </div>
           </div>
-          <WeeklyProgress />
+          <div className="text-right">
+            <div className="text-sm text-muted-foreground font-medium uppercase tracking-wider mb-1">
+              Weekly Progress
+            </div>
+            <WeeklyProgress />
+            <div className="text-xs text-muted-foreground/70">
+              Resets {nextReset}
+            </div>
+          </div>
         </div>
         <section className="mb-12">
           <TaskForm />

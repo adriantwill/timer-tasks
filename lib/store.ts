@@ -1,8 +1,8 @@
-import { AppState, Task, TaskStats, WeeklyHistory } from '@/types';
-import { getCurrentWeekId, isNewWeek } from '@/lib/temporal';
-import { Temporal } from '@js-temporal/polyfill';
+import { AppState, Task, WeeklyHistory } from "@/types";
+import { getCurrentWeekId, isNewWeek } from "@/lib/temporal";
+import { Temporal } from "@js-temporal/polyfill";
 
-const STORAGE_KEY = 'timer-tasks-state';
+const STORAGE_KEY = "timer-tasks-state";
 
 // Default initial state
 const initialState: AppState = {
@@ -23,15 +23,15 @@ class TaskStore {
   private activeTaskId: string | null = null;
   private listeners: Set<() => void> = new Set();
   private timer: NodeJS.Timeout | null = null;
-  
+
   // Cache the snapshot to ensure referential stability
   private snapshot = defaultSnapshot;
 
   constructor() {
     this.state = initialState;
-    
+
     // Attempt to load immediately if on client
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       this.load();
     }
   }
@@ -48,7 +48,7 @@ class TaskStore {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved) as AppState;
-        
+
         if (isNewWeek(parsed.lastUpdated)) {
           this.handleWeeklyReset(parsed);
         } else {
@@ -70,7 +70,7 @@ class TaskStore {
     // Update lifetime stats for each task
     const updatedStats = [...(oldState.lifetimeStats || [])];
     for (const task of oldState.currentTasks) {
-      const existing = updatedStats.find(s => s.taskId === task.id);
+      const existing = updatedStats.find((s) => s.taskId === task.id);
       const completed = task.elapsedTime >= task.targetTime ? 1 : 0;
 
       if (existing) {
@@ -88,7 +88,10 @@ class TaskStore {
     }
 
     this.state = {
-      currentTasks: oldState.currentTasks.map(t => ({ ...t, elapsedTime: 0 })),
+      currentTasks: oldState.currentTasks.map((t) => ({
+        ...t,
+        elapsedTime: 0,
+      })),
       history: [newHistory, ...oldState.history].slice(0, 5),
       lifetimeStats: updatedStats,
       lastUpdated: Temporal.Now.instant().toString(),
@@ -97,7 +100,7 @@ class TaskStore {
   }
 
   private save() {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
     }
     this.updateSnapshot();
@@ -105,7 +108,7 @@ class TaskStore {
   }
 
   private emitChange() {
-    this.listeners.forEach(listener => listener());
+    this.listeners.forEach((listener) => listener());
   }
 
   // --- Subscription for React ---
@@ -119,10 +122,10 @@ class TaskStore {
   public getSnapshot = () => {
     return this.snapshot;
   };
-  
+
   public getServerSnapshot = () => {
     return defaultSnapshot;
-  }
+  };
 
   // --- Actions ---
 
@@ -133,6 +136,7 @@ class TaskStore {
       targetTime: hours * 3600,
       elapsedTime: 0,
       createdAt: Temporal.Now.instant().toString(),
+      color: "#3873fc",
     };
     this.state = {
       ...this.state,
@@ -143,14 +147,24 @@ class TaskStore {
 
   public deleteTask(id: string) {
     if (this.activeTaskId === id) {
-      this.toggleTimer(id); // Will handle snapshot update internally via emitChange/toggle logic? 
+      this.toggleTimer(id); // Will handle snapshot update internally via emitChange/toggle logic?
       // toggleTimer updates snapshot, but let's be safe.
-      // Actually toggleTimer might NOT save to localstorage if it just pauses, 
+      // Actually toggleTimer might NOT save to localstorage if it just pauses,
       // but here we are deleting.
     }
     this.state = {
       ...this.state,
-      currentTasks: this.state.currentTasks.filter(t => t.id !== id),
+      currentTasks: this.state.currentTasks.filter((t) => t.id !== id),
+    };
+    this.save();
+  }
+
+  public updateTaskColor(id: string, color: string) {
+    this.state = {
+      ...this.state,
+      currentTasks: this.state.currentTasks.map((t) =>
+        t.id === id ? { ...t, color } : t,
+      ),
     };
     this.save();
   }
@@ -176,8 +190,10 @@ class TaskStore {
 
     this.state = {
       ...this.state,
-      currentTasks: this.state.currentTasks.map(t =>
-        t.id === this.activeTaskId ? { ...t, elapsedTime: t.elapsedTime + 1 } : t
+      currentTasks: this.state.currentTasks.map((t) =>
+        t.id === this.activeTaskId
+          ? { ...t, elapsedTime: t.elapsedTime + 1 }
+          : t,
       ),
       lastUpdated: Temporal.Now.instant().toString(),
     };
@@ -189,9 +205,11 @@ class TaskStore {
       exportedAt: Temporal.Now.instant().toString(),
       ...this.state,
     };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `timer-tasks-${getCurrentWeekId()}.json`;
     a.click();
