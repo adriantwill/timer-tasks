@@ -23,6 +23,7 @@ class TaskStore {
   private activeTaskId: string | null = null;
   private listeners: Set<() => void> = new Set();
   private timer: NodeJS.Timeout | null = null;
+  private lastTickTime: number = 0;
 
   // Cache the snapshot to ensure referential stability
   private snapshot = defaultSnapshot;
@@ -67,10 +68,11 @@ class TaskStore {
       tasks: oldState.currentTasks,
     };
 
-    // Update lifetime stats for each task
+    // Update lifetime stats for each task (grouped by color)
     const updatedStats = [...(oldState.lifetimeStats || [])];
     for (const task of oldState.currentTasks) {
-      const existing = updatedStats.find((s) => s.taskId === task.id);
+      const taskColor = task.color || "#3873fc";
+      const existing = updatedStats.find((s) => s.color === taskColor);
       const completed = task.elapsedTime >= task.targetTime ? 1 : 0;
 
       if (existing) {
@@ -79,7 +81,7 @@ class TaskStore {
         existing.title = task.title; // keep title in sync
       } else {
         updatedStats.push({
-          taskId: task.id,
+          color: taskColor,
           title: task.title,
           totalTimeSpent: task.elapsedTime,
           weeksCompleted: completed,
@@ -175,10 +177,12 @@ class TaskStore {
       this.activeTaskId = null;
       if (this.timer) clearInterval(this.timer);
       this.timer = null;
+      this.lastTickTime = 0;
     } else {
       // Start
       if (this.timer) clearInterval(this.timer);
       this.activeTaskId = id;
+      this.lastTickTime = Date.now();
       this.timer = setInterval(() => this.tick(), 1000);
     }
     this.updateSnapshot();
@@ -187,6 +191,17 @@ class TaskStore {
 
   private tick() {
     if (!this.activeTaskId) return;
+
+    const now = Date.now();
+    const elapsed = now - this.lastTickTime;
+
+    // If > 5 seconds elapsed, system was likely asleep - pause timer
+    if (elapsed > 5000) {
+      this.toggleTimer(this.activeTaskId);
+      return;
+    }
+
+    this.lastTickTime = now;
 
     this.state = {
       ...this.state,

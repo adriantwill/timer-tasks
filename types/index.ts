@@ -13,8 +13,8 @@ export interface WeeklyHistory {
 }
 
 export interface TaskStats {
-  taskId: string;
-  title: string;
+  color: string; // hex color - primary key for linking tasks
+  title: string; // most recent task title with this color
   totalTimeSpent: number; // lifetime seconds
   weeksCompleted: number; // weeks where elapsed >= target
 }

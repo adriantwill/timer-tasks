@@ -34,12 +34,18 @@ export function HistoryStats() {
           <div className="space-y-3">
             {lifetimeStats.map((stat) => (
               <div
-                key={stat.taskId}
+                key={stat.color}
                 className="flex items-center justify-between text-xs text-muted-foreground"
               >
-                <span className="font-medium truncate max-w-50">
-                  {stat.title}
-                </span>
+                <div className="flex items-center gap-2">
+                  <div
+                    className="w-3 h-3 rounded-full shrink-0"
+                    style={{ backgroundColor: stat.color }}
+                  />
+                  <span className="font-medium truncate max-w-50">
+                    {stat.title}
+                  </span>
+                </div>
                 <div className="flex gap-4">
                   <span>{stat.weeksCompleted} weeks completed</span>
                   <span>{formatDuration(stat.totalTimeSpent)} total</span>
