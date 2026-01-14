@@ -1,4 +1,4 @@
-import { AppState, Task, WeeklyHistory } from "@/types";
+import { AppState, Task } from "@/types";
 import { getCurrentWeekId, isNewWeek } from "@/lib/temporal";
 import { Temporal } from "@js-temporal/polyfill";
 
@@ -7,7 +7,6 @@ const STORAGE_KEY = "timer-tasks-state";
 // Default initial state
 const initialState: AppState = {
   currentTasks: [],
-  history: [],
   lifetimeStats: [],
   lastUpdated: Temporal.Now.instant().toString(),
 };
@@ -63,11 +62,6 @@ class TaskStore {
   }
 
   private handleWeeklyReset(oldState: AppState) {
-    const newHistory: WeeklyHistory = {
-      weekId: oldState.lastUpdated,
-      tasks: oldState.currentTasks,
-    };
-
     // Update lifetime stats for each task (grouped by color)
     const updatedStats = [...(oldState.lifetimeStats || [])];
     for (const task of oldState.currentTasks) {
@@ -94,7 +88,6 @@ class TaskStore {
         ...t,
         elapsedTime: 0,
       })),
-      history: [newHistory, ...oldState.history].slice(0, 5),
       lifetimeStats: updatedStats,
       lastUpdated: Temporal.Now.instant().toString(),
     };
@@ -195,8 +188,8 @@ class TaskStore {
     const now = Date.now();
     const elapsed = now - this.lastTickTime;
 
-    // If > 5 seconds elapsed, system was likely asleep - pause timer
-    if (elapsed > 5000) {
+    // If > 3 minutes elapsed, system was likely asleep - pause timer
+    if (elapsed > 180000) {
       this.toggleTimer(this.activeTaskId);
       return;
     }

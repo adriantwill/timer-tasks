@@ -1,18 +1,17 @@
-'use client';
+"use client";
 
-import { useSyncExternalStore } from 'react';
-import { taskStore } from '@/lib/store';
+import { useSyncExternalStore } from "react";
+import { taskStore } from "@/lib/store";
 
 export function useTasks() {
   const snapshot = useSyncExternalStore(
     taskStore.subscribe,
     taskStore.getSnapshot,
-    taskStore.getServerSnapshot
+    taskStore.getServerSnapshot,
   );
 
   return {
     tasks: snapshot.currentTasks,
-    history: snapshot.history,
     lifetimeStats: snapshot.lifetimeStats,
     activeTaskId: snapshot.activeTaskId,
     addTask: (title: string, hours: number) => taskStore.addTask(title, hours),

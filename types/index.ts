@@ -7,11 +7,6 @@ export interface Task {
   color?: string; // hex color, defaults to primary blue
 }
 
-export interface WeeklyHistory {
-  weekId: string; // e.g., "2024-W52"
-  tasks: Task[];
-}
-
 export interface TaskStats {
   color: string; // hex color - primary key for linking tasks
   title: string; // most recent task title with this color
@@ -21,7 +16,6 @@ export interface TaskStats {
 
 export interface AppState {
   currentTasks: Task[];
-  history: WeeklyHistory[];
   lifetimeStats: TaskStats[];
   lastUpdated: string; // ISO string
 }
