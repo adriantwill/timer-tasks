@@ -18,5 +18,7 @@ export function useTasks() {
 		toggleTimer: (id: string) => taskStore.toggleTimer(id),
 		deleteTask: (id: string) => taskStore.deleteTask(id),
 		exportData: () => taskStore.exportData(),
+		renameLifetimeStat: (color: string, newTitle: string) =>
+			taskStore.renameLifetimeStat(color, newTitle),
 	};
 }

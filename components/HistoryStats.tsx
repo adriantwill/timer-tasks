@@ -1,15 +1,44 @@
 "use client";
+import { useState } from "react";
 import { Download } from "lucide-react";
 import { useTasks } from "@/hooks/useTasks";
 import { formatDuration } from "@/lib/utils";
 
 export function HistoryStats() {
-	const { lifetimeStats, exportData } = useTasks();
+	const { lifetimeStats, exportData, renameLifetimeStat } = useTasks();
+	const [editingColor, setEditingColor] = useState<string | null>(null);
+	const [editValue, setEditValue] = useState("");
 
 	const hasStats = lifetimeStats && lifetimeStats.length > 0;
 
 	const copyColorToClipboard = async (color: string) => {
 		await navigator.clipboard.writeText(color);
+	};
+
+	const startEditing = (color: string, currentTitle: string) => {
+		setEditingColor(color);
+		setEditValue(currentTitle);
+	};
+
+	const saveEdit = () => {
+		if (editingColor && editValue.trim()) {
+			renameLifetimeStat(editingColor, editValue.trim());
+		}
+		setEditingColor(null);
+		setEditValue("");
+	};
+
+	const cancelEdit = () => {
+		setEditingColor(null);
+		setEditValue("");
+	};
+
+	const handleKeyDown = (e: React.KeyboardEvent) => {
+		if (e.key === "Enter") {
+			saveEdit();
+		} else if (e.key === "Escape") {
+			cancelEdit();
+		}
 	};
 
 	if (!hasStats) return null;
@@ -46,9 +75,25 @@ export function HistoryStats() {
 										onClick={() => copyColorToClipboard(stat.color)}
 										title={`Click to copy ${stat.color}`}
 									/>
-									<span className="font-medium truncate max-w-50">
-										{stat.title}
-									</span>
+									{editingColor === stat.color ? (
+										<input
+											type="text"
+											value={editValue}
+											onChange={(e) => setEditValue(e.target.value)}
+											onBlur={saveEdit}
+											onKeyDown={handleKeyDown}
+											autoFocus
+											className="font-medium bg-background border border-border rounded px-1 py-0 text-xs w-32 focus:outline-none focus:ring-1 focus:ring-foreground/20"
+										/>
+									) : (
+										<span
+											className="font-medium truncate max-w-50 cursor-pointer hover:text-foreground transition-colors"
+											onClick={() => startEditing(stat.color, stat.title)}
+											title="Click to rename"
+										>
+											{stat.title}
+										</span>
+									)}
 								</div>
 								<div className="flex gap-4">
 									<span>{stat.weeksCompleted} weeks completed</span>

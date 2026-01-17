@@ -72,7 +72,6 @@ class TaskStore {
 			if (existing) {
 				existing.totalTimeSpent += task.elapsedTime;
 				existing.weeksCompleted += completed;
-				existing.title = task.title; // keep title in sync
 			} else {
 				updatedStats.push({
 					color: taskColor,
@@ -161,6 +160,16 @@ class TaskStore {
 			...this.state,
 			currentTasks: this.state.currentTasks.map((t) =>
 				t.id === id ? { ...t, color } : t,
+			),
+		};
+		this.save();
+	}
+
+	public renameLifetimeStat(color: string, newTitle: string) {
+		this.state = {
+			...this.state,
+			lifetimeStats: this.state.lifetimeStats.map((s) =>
+				s.color === color ? { ...s, title: newTitle } : s,
 			),
 		};
 		this.save();
