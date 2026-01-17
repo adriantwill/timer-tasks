@@ -67,7 +67,10 @@ class TaskStore {
 		for (const task of oldState.currentTasks) {
 			const taskColor = task.color || "#3873fc";
 			const existing = updatedStats.find((s) => s.color === taskColor);
-			const completed = task.elapsedTime >= task.targetTime ? 1 : 0;
+			const isNoLimit = task.targetTime === null;
+			const completed = isNoLimit
+				? (task.isManualComplete === true ? 1 : 0)
+				: (task.elapsedTime >= task.targetTime ? 1 : 0);
 
 			if (existing) {
 				existing.totalTimeSpent += task.elapsedTime;
@@ -86,6 +89,7 @@ class TaskStore {
 			currentTasks: oldState.currentTasks.map((t) => ({
 				...t,
 				elapsedTime: 0,
+				isManualComplete: false,
 			})),
 			lifetimeStats: updatedStats,
 			lastUpdated: Temporal.Now.instant().toString(),
@@ -125,14 +129,15 @@ class TaskStore {
 
 	// --- Actions ---
 
-	public addTask(title: string, hours: number) {
+	public addTask(title: string, hours: number | null) {
 		const newTask: Task = {
 			id: crypto.randomUUID(),
 			title,
-			targetTime: hours * 3600,
+			targetTime: hours !== null ? hours * 3600 : null,
 			elapsedTime: 0,
 			createdAt: Temporal.Now.instant().toString(),
 			color: "#3873fc",
+			isManualComplete: false,
 		};
 		this.state = {
 			...this.state,
@@ -160,6 +165,16 @@ class TaskStore {
 			...this.state,
 			currentTasks: this.state.currentTasks.map((t) =>
 				t.id === id ? { ...t, color } : t,
+			),
+		};
+		this.save();
+	}
+
+	public toggleManualComplete(id: string) {
+		this.state = {
+			...this.state,
+			currentTasks: this.state.currentTasks.map((t) =>
+				t.id === id ? { ...t, isManualComplete: !t.isManualComplete } : t,
 			),
 		};
 		this.save();

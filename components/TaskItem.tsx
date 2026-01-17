@@ -11,8 +11,11 @@ interface TaskItemProps {
 }
 
 export function TaskItem({ task, isActive }: TaskItemProps) {
-	const progress = (task.elapsedTime / task.targetTime) * 100;
-	const isCompleted = task.elapsedTime >= task.targetTime;
+	const isNoLimit = task.targetTime === null;
+	const progress = isNoLimit ? 0 : (task.elapsedTime / task.targetTime) * 100;
+	const isCompleted = isNoLimit
+		? task.isManualComplete === true
+		: task.elapsedTime >= task.targetTime;
 	const colorPickerRef = useRef<HTMLInputElement>(null);
 
 	const taskColor = task.color || "#3873fc";
@@ -78,12 +81,30 @@ export function TaskItem({ task, isActive }: TaskItemProps) {
 			</div>
 
 			<div className="space-y-4">
-				<div className="flex justify-between text-sm text-muted-foreground">
-					<span>{formatDuration(task.elapsedTime)}</span>
-					<span>Goal: {formatDuration(task.targetTime)}</span>
-				</div>
-
-				<ProgressBar progress={progress} />
+				{isNoLimit ? (
+					<div className="flex justify-between items-center text-sm">
+						<span className="text-muted-foreground">
+							{formatDuration(task.elapsedTime)}
+						</span>
+						<label className="flex items-center gap-2 cursor-pointer">
+							<input
+								type="checkbox"
+								checked={isCompleted}
+								onChange={() => taskStore.toggleManualComplete(task.id)}
+								className="w-4 h-4 rounded border-input cursor-pointer"
+							/>
+							<span className="text-muted-foreground text-xs">Done</span>
+						</label>
+					</div>
+				) : (
+					<>
+						<div className="flex justify-between text-sm text-muted-foreground">
+							<span>{formatDuration(task.elapsedTime)}</span>
+							<span>Goal: {formatDuration(task.targetTime!)}</span>
+						</div>
+						<ProgressBar progress={progress} />
+					</>
+				)}
 
 				<div className="flex justify-center pt-2">
 					<button

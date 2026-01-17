@@ -9,8 +9,9 @@ export function TaskForm() {
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		if (!title || !hours) return;
-		taskStore.addTask(title, parseFloat(hours));
+		if (!title) return;
+		const hoursValue = hours ? parseFloat(hours) : null;
+		taskStore.addTask(title, hoursValue);
 		setTitle("");
 		setHours("");
 	};
@@ -30,13 +31,12 @@ export function TaskForm() {
 			/>
 			<input
 				type="number"
-				placeholder="Hours"
+				placeholder="Hours (optional)"
 				value={hours}
 				onChange={(e) => setHours(e.target.value)}
 				className="w-full md:w-32 px-4 py-3 rounded-xl border border-input bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all placeholder:text-muted-foreground"
 				min="0.1"
 				step="0.1"
-				required
 			/>
 			<button
 				type="submit"

@@ -1,10 +1,11 @@
 export interface Task {
 	id: string;
 	title: string;
-	targetTime: number; // in seconds
+	targetTime: number | null; // in seconds, null for no-limit tasks
 	elapsedTime: number; // in seconds
 	createdAt: string; // ISO string
 	color?: string; // hex color, defaults to primary blue
+	isManualComplete?: boolean; // for no-limit tasks
 }
 
 export interface TaskStats {
