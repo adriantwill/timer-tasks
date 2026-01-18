@@ -8,10 +8,16 @@ export interface Task {
 	isManualComplete?: boolean; // for no-limit tasks
 }
 
+export interface TaskTimeEntry {
+	title: string;
+	time: number; // seconds
+}
+
 export interface TaskStats {
 	color: string; // hex color - primary key for linking tasks
 	title: string; // most recent task title with this color
 	totalTimeSpent: number; // lifetime seconds
+	breakdown?: TaskTimeEntry[]; // individual task contributions
 }
 
 export interface AppState {

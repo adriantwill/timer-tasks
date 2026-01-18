@@ -65,16 +65,28 @@ class TaskStore {
 		// Update lifetime stats for each task (grouped by color)
 		const updatedStats = [...(oldState.lifetimeStats || [])];
 		for (const task of oldState.currentTasks) {
+			if (task.elapsedTime === 0) continue; // skip tasks with no time
 			const taskColor = task.color || "#3873fc";
 			const existing = updatedStats.find((s) => s.color === taskColor);
 
 			if (existing) {
-				existing.totalTimeSpent += task.elapsedTime;
+				// Add to breakdown
+				const breakdown = existing.breakdown || [];
+				const existingEntry = breakdown.find((b) => b.title === task.title);
+				if (existingEntry) {
+					existingEntry.time += task.elapsedTime;
+				} else {
+					breakdown.push({ title: task.title, time: task.elapsedTime });
+				}
+				existing.breakdown = breakdown;
+				// Compute total from breakdown
+				existing.totalTimeSpent = breakdown.reduce((sum, b) => sum + b.time, 0);
 			} else {
 				updatedStats.push({
 					color: taskColor,
 					title: task.title,
 					totalTimeSpent: task.elapsedTime,
+					breakdown: [{ title: task.title, time: task.elapsedTime }],
 				});
 			}
 		}
