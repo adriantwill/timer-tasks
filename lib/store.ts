@@ -67,20 +67,14 @@ class TaskStore {
 		for (const task of oldState.currentTasks) {
 			const taskColor = task.color || "#3873fc";
 			const existing = updatedStats.find((s) => s.color === taskColor);
-			const isNoLimit = task.targetTime === null;
-			const completed = isNoLimit
-				? (task.isManualComplete === true ? 1 : 0)
-				: (task.elapsedTime >= task.targetTime ? 1 : 0);
 
 			if (existing) {
 				existing.totalTimeSpent += task.elapsedTime;
-				existing.weeksCompleted += completed;
 			} else {
 				updatedStats.push({
 					color: taskColor,
 					title: task.title,
 					totalTimeSpent: task.elapsedTime,
-					weeksCompleted: completed,
 				});
 			}
 		}

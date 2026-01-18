@@ -12,10 +12,10 @@ interface TaskItemProps {
 
 export function TaskItem({ task, isActive }: TaskItemProps) {
 	const isNoLimit = task.targetTime === null;
-	const progress = isNoLimit ? 0 : (task.elapsedTime / task.targetTime) * 100;
+	const progress = isNoLimit ? 0 : (task.elapsedTime / task.targetTime!) * 100;
 	const isCompleted = isNoLimit
 		? task.isManualComplete === true
-		: task.elapsedTime >= task.targetTime;
+		: task.elapsedTime >= task.targetTime!;
 	const colorPickerRef = useRef<HTMLInputElement>(null);
 
 	const taskColor = task.color || "#3873fc";

@@ -96,7 +96,6 @@ export function HistoryStats() {
 									)}
 								</div>
 								<div className="flex gap-4">
-									<span>{stat.weeksCompleted} weeks completed</span>
 									<span>{formatDuration(stat.totalTimeSpent)} total</span>
 								</div>
 							</div>
