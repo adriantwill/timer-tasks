@@ -13,9 +13,7 @@ interface TaskItemProps {
 export function TaskItem({ task, isActive }: TaskItemProps) {
 	const isNoLimit = task.targetTime === null;
 	const progress = isNoLimit ? 0 : (task.elapsedTime / task.targetTime!) * 100;
-	const isCompleted = isNoLimit
-		? task.isManualComplete === true
-		: task.elapsedTime >= task.targetTime!;
+	const isCompleted = isNoLimit ? false : task.elapsedTime >= task.targetTime!;
 	const colorPickerRef = useRef<HTMLInputElement>(null);
 
 	const taskColor = task.color || "#3873fc";
@@ -82,19 +80,10 @@ export function TaskItem({ task, isActive }: TaskItemProps) {
 
 			<div className="space-y-4">
 				{isNoLimit ? (
-					<div className="flex justify-between items-center text-sm">
+					<div className="text-sm">
 						<span className="text-muted-foreground">
 							{formatDuration(task.elapsedTime)}
 						</span>
-						<label className="flex items-center gap-2 cursor-pointer">
-							<input
-								type="checkbox"
-								checked={isCompleted}
-								onChange={() => taskStore.toggleManualComplete(task.id)}
-								className="w-4 h-4 rounded border-input cursor-pointer"
-							/>
-							<span className="text-muted-foreground text-xs">Done</span>
-						</label>
 					</div>
 				) : (
 					<>
@@ -110,13 +99,11 @@ export function TaskItem({ task, isActive }: TaskItemProps) {
 					<button
 						type="button"
 						onClick={() => taskStore.toggleTimer(task.id)}
-						disabled={isCompleted}
 						className={cn(
 							"flex items-center gap-2 px-6 py-2 rounded-full font-medium transition-all",
 							isActive
 								? "bg-primary text-primary-foreground"
 								: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-							isCompleted && "opacity-50 cursor-not-allowed",
 						)}
 					>
 						{isActive ? (

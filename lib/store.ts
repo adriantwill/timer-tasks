@@ -64,7 +64,8 @@ class TaskStore {
 	private handleWeeklyReset(oldState: AppState) {
 		// Update lifetime stats for each task (grouped by color)
 		const updatedStats = [...(oldState.lifetimeStats || [])];
-		for (const task of oldState.currentTasks) {
+		const tasks = oldState.currentTasks || [];
+		for (const task of tasks) {
 			if (task.elapsedTime === 0) continue; // skip tasks with no time
 			const taskColor = task.color || "#3873fc";
 			const existing = updatedStats.find((s) => s.color === taskColor);
@@ -224,6 +225,11 @@ class TaskStore {
 		if (elapsed > 180000) {
 			this.toggleTimer(this.activeTaskId);
 			return;
+		}
+
+		// Check for week change during active timer (e.g., midnight Sun→Mon)
+		if (isNewWeek(this.state.lastUpdated)) {
+			this.handleWeeklyReset(this.state);
 		}
 
 		this.lastTickTime = now;
