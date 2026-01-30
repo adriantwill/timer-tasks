@@ -219,13 +219,10 @@ class TaskStore {
 		if (!this.activeTaskId) return;
 
 		const now = Date.now();
-		const elapsed = now - this.lastTickTime;
+		const elapsedMs = now - this.lastTickTime;
 
-		// If > 3 minutes elapsed, system was likely asleep - pause timer
-		if (elapsed > 180000) {
-			this.toggleTimer(this.activeTaskId);
-			return;
-		}
+		// Cap at 10 min per tick to handle sleep, but allow background tab throttling
+		const secondsToAdd = Math.min(Math.floor(elapsedMs / 1000), 600);
 
 		// Check for week change during active timer (e.g., midnight Sun→Mon)
 		if (isNewWeek(this.state.lastUpdated)) {
@@ -238,7 +235,7 @@ class TaskStore {
 			...this.state,
 			currentTasks: this.state.currentTasks.map((t) =>
 				t.id === this.activeTaskId
-					? { ...t, elapsedTime: t.elapsedTime + 1 }
+					? { ...t, elapsedTime: t.elapsedTime + secondsToAdd }
 					: t,
 			),
 			lastUpdated: Temporal.Now.instant().toString(),
